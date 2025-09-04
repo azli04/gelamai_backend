@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\Api\AplikasiController;
 
 // Auth
 Route::post('/login', [AuthController::class, 'login']);
@@ -34,3 +35,19 @@ Route::middleware(['auth:sanctum', 'superadmin'])->group(function () {
     Route::apiResource('users', UserController::class)->except(['index', 'show']);
     Route::apiResource('roles', RoleController::class)->except(['index', 'show']);
 });
+
+
+// ===============================
+// Aplikasi routes
+// ===============================
+
+Route::middleware(['auth:sanctum'])->group(function () {
+    // hanya Super Admin & Admin Web
+    Route::middleware(['role:Super Admin,Admin Web'])->group(function () {
+        Route::apiResource('aplikasi', AplikasiController::class);
+    });
+});
+
+// semua user boleh lihat
+    Route::get('aplikasi', [AplikasiController::class, 'index']);
+    Route::get('aplikasi/{id}', [AplikasiController::class, 'show']);

@@ -13,8 +13,9 @@ class Aplikasi extends Model
     protected $primaryKey = 'id_aplikasi';
 
     protected $fillable = [
-        'nama_aplikasi',
+        'nama_app',   // 🔹 disamakan
         'url',
         'kategori',
+        'image',
     ];
 }

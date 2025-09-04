@@ -17,9 +17,10 @@ return Application::configure(basePath: dirname(__DIR__))
         \Illuminate\Routing\Middleware\SubstituteBindings::class,
     ]);
 
-    // daftarkan alias
+    // 🔥 daftar alias middleware custom
     $middleware->alias([
         'superadmin' => \App\Http\Middleware\SuperadminMiddleware::class,
+        'role' => \App\Http\Middleware\RoleMiddleware::class,
     ]);
 })
 
