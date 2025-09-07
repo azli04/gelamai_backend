@@ -8,13 +8,14 @@ return new class extends Migration {
     public function up(): void {
         Schema::create('artikel', function (Blueprint $table) {
             $table->id('id_artikel');
-            $table->string('judul',150);
+            $table->string('judul', 150);
             $table->text('isi');
-            $table->string('gambar',255)->nullable();
-            $table->date('tanggal');
-            $table->timestamps();
+            $table->string('gambar', 255)->nullable();
+            $table->date('tanggal')->nullable(); // ✅ simpan tanggal artikel terbit
+            $table->timestamps(); // ✅ created_at & updated_at
         });
     }
+
     public function down(): void {
         Schema::dropIfExists('artikel');
     }
