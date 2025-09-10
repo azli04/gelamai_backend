@@ -36,7 +36,7 @@ class User extends Authenticatable
      */
      protected $hidden = [
         'password',
-        'id_user',
+
     ];
 
     public function role()

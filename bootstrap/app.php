@@ -12,18 +12,20 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-    $middleware->group('api', [
-        \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-        \Illuminate\Routing\Middleware\SubstituteBindings::class,
-    ]);
+        // middleware group API
+        $middleware->group('api', [
+            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+        ]);
 
-    // 🔥 daftar alias middleware custom
-    $middleware->alias([
-        'superadmin' => \App\Http\Middleware\SuperadminMiddleware::class,
-        'role' => \App\Http\Middleware\RoleMiddleware::class,
-    ]);
-})
-
+        // alias middleware bawaan & custom
+        $middleware->alias([
+            'auth'       => \App\Http\Middleware\Authenticate::class,
+            'guest'      => \App\Http\Middleware\RedirectIfAuthenticated::class,
+            'role'       => \App\Http\Middleware\RoleMiddleware::class,
+            'superadmin' => \App\Http\Middleware\SuperadminMiddleware::class,
+        ]);
+    })
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();
