@@ -7,6 +7,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\Api\AplikasiController;
 use App\Http\Controllers\Api\ArtikelController;
+use App\Http\Controllers\Api\LayananController;
 use App\Http\Controllers\Api\BeritaEventController;
 
 // ===============================
@@ -21,12 +22,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-// ===============================
 // Users & Roles (hanya superadmin)
 // ===============================
 Route::middleware(['auth:sanctum', 'superadmin'])->group(function () {
-    Route::apiResource('users', UserController::class)->except(['index', 'show']);
-    Route::apiResource('roles', RoleController::class)->except(['index', 'show']);
+    Route::apiResource('users', UserController::class);
+    Route::apiResource('roles', RoleController::class);
 });
 
 // ===============================
@@ -62,3 +62,10 @@ Route::apiResource('berita', BeritaEventController::class)->only(['index', 'show
 Route::middleware(['auth:sanctum', 'role:Super Admin,Admin Web'])->group(function () {
     Route::apiResource('berita', BeritaEventController::class)->except(['index', 'show']);
 });
+
+
+// ===============================
+// Layanan
+// ===============================
+// Publik boleh lihat
+Route::apiResource('layanans', LayananController::class);
