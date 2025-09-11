@@ -36,6 +36,10 @@ class User extends Authenticatable
      */
      protected $hidden = [
         'password',
+<<<<<<< HEAD
+=======
+
+>>>>>>> 675e2fda4dad5cb621b732948a4b5b3096e168cf
     ];
 
     public function role()
