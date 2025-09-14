@@ -9,6 +9,8 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\Api\AplikasiController;
 use App\Http\Controllers\Api\ArtikelController;
 use App\Http\Controllers\Api\BeritaEventController;
+use App\Http\Controllers\Api\FaqController;
+use App\Http\Controllers\Api\FaqKategoriController;
 
 // ===============================
 // Auth Routes
@@ -69,4 +71,40 @@ Route::get('berita/{id}', [BeritaEventController::class, 'show']);
 // CRUD hanya untuk Super Admin & Admin Web
 Route::middleware(['auth:sanctum', 'role:Super Admin,Admin Web'])->group(function () {
     Route::apiResource('berita', BeritaEventController::class)->except(['index', 'show']);
+});
+
+// ===============================
+// FAQ
+// ===============================
+
+// ---------- Public FAQ ----------
+// Lihat semua FAQ (hanya yg status = dijawab)
+Route::get('faq', [FaqController::class, 'index']);
+
+// Kirim pertanyaan baru
+Route::post('faq', [FaqController::class, 'store']);
+
+// Cari FAQ berdasarkan keyword
+Route::get('faq/search', [FaqController::class, 'search']);
+
+// Filter FAQ berdasarkan kategori
+Route::get('faq/kategori/{id}', [FaqController::class, 'byKategori']);
+
+// ---------- Admin FAQ ----------
+// hanya Super Admin & Admin Web
+Route::middleware(['auth:sanctum', 'role:Super Admin,Admin Web'])->group(function () {
+
+    // Pertanyaan
+    Route::get('admin/faq', [FaqController::class, 'adminIndex']); // semua pertanyaan
+    Route::get('admin/faq/pending', [FaqController::class, 'pending']); // hanya pending
+    Route::put('admin/faq/{id}/jawab', [FaqController::class, 'jawab']); // jawab pertanyaan
+    Route::put('admin/faq/{id}/tolak', [FaqController::class, 'tolak']); // tolak pertanyaan
+    Route::delete('admin/faq/{id}', [FaqController::class, 'destroy']); // hapus pertanyaan
+    Route::delete('admin/faq/public', [FaqController::class, 'deletePublic']); // hapus semua pertanyaan user
+
+    // Kategori FAQ
+    Route::get('admin/faq-kategori', [FaqKategoriController::class, 'index']);
+    Route::post('admin/faq-kategori', [FaqKategoriController::class, 'store']);
+    Route::put('admin/faq-kategori/{id}', [FaqKategoriController::class, 'update']);
+    Route::delete('admin/faq-kategori/{id}', [FaqKategoriController::class, 'destroy']);
 });
