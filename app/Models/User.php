@@ -13,7 +13,7 @@ class User extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
 
-    
+
     protected $primaryKey = 'id_user';
 
 
@@ -36,7 +36,6 @@ class User extends Authenticatable
      */
      protected $hidden = [
         'password',
-
     ];
 
     public function role()
