@@ -9,8 +9,6 @@ use App\Http\Controllers\Api\AplikasiController;
 use App\Http\Controllers\Api\ArtikelController;
 use App\Http\Controllers\Api\LayananController;
 use App\Http\Controllers\Api\BeritaEventController;
-use Illuminate\Support\Facades\Storage;
-
 
 // ===============================
 // Auth
@@ -24,6 +22,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+// ===============================
 // Users & Roles (hanya superadmin)
 // ===============================
 Route::middleware(['auth:sanctum', 'superadmin'])->group(function () {
@@ -34,11 +33,11 @@ Route::middleware(['auth:sanctum', 'superadmin'])->group(function () {
 // ===============================
 // Aplikasi
 // ===============================
-// Semua user boleh lihat
+// Publik boleh lihat
 Route::get('aplikasi', [AplikasiController::class, 'index']);
 Route::get('aplikasi/{id}', [AplikasiController::class, 'show']);
 
-// Hanya Super Admin & Admin Web boleh CRUD
+// CRUD hanya Super Admin & Admin Web
 Route::middleware(['auth:sanctum', 'role:Super Admin,Admin Web'])->group(function () {
     Route::apiResource('aplikasi', AplikasiController::class)->except(['index', 'show']);
 });
@@ -49,7 +48,7 @@ Route::middleware(['auth:sanctum', 'role:Super Admin,Admin Web'])->group(functio
 // Publik boleh lihat
 Route::apiResource('artikel', ArtikelController::class)->only(['index', 'show']);
 
-// Hanya Super Admin & Admin Web boleh CRUD
+// CRUD hanya Super Admin & Admin Web
 Route::middleware(['auth:sanctum', 'role:Super Admin,Admin Web'])->group(function () {
     Route::apiResource('artikel', ArtikelController::class)->except(['index', 'show']);
 });
@@ -60,15 +59,13 @@ Route::middleware(['auth:sanctum', 'role:Super Admin,Admin Web'])->group(functio
 // Publik boleh lihat
 Route::apiResource('berita', BeritaEventController::class)->only(['index', 'show']);
 
-// Hanya Super Admin & Admin Web boleh CRUD
+// CRUD hanya Super Admin & Admin Web
 Route::middleware(['auth:sanctum', 'role:Super Admin,Admin Web'])->group(function () {
     Route::apiResource('berita', BeritaEventController::class)->except(['index', 'show']);
 });
-
 
 // ===============================
 // Layanan
 // ===============================
 // Publik boleh lihat
 Route::apiResource('layanans', LayananController::class);
-
