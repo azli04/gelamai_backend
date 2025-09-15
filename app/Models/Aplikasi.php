@@ -17,5 +17,6 @@ class Aplikasi extends Model
         'url',
         'kategori',
         'image',
+        'deskripsi',
     ];
 }

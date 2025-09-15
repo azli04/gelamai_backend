@@ -21,7 +21,6 @@ return Application::configure(basePath: dirname(__DIR__))
         // alias middleware bawaan & custom
         $middleware->alias([
             'auth'       => \App\Http\Middleware\Authenticate::class,
-            'guest'      => \App\Http\Middleware\RedirectIfAuthenticated::class,
             'role'       => \App\Http\Middleware\RoleMiddleware::class,
             'superadmin' => \App\Http\Middleware\SuperadminMiddleware::class,
         ]);

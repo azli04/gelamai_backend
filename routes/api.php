@@ -9,6 +9,8 @@ use App\Http\Controllers\Api\AplikasiController;
 use App\Http\Controllers\Api\ArtikelController;
 use App\Http\Controllers\Api\LayananController;
 use App\Http\Controllers\Api\BeritaEventController;
+use Illuminate\Support\Facades\Storage;
+
 
 // ===============================
 // Auth
@@ -69,3 +71,4 @@ Route::middleware(['auth:sanctum', 'role:Super Admin,Admin Web'])->group(functio
 // ===============================
 // Publik boleh lihat
 Route::apiResource('layanans', LayananController::class);
+
