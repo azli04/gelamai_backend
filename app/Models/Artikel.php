@@ -11,12 +11,13 @@ class Artikel extends Model
 
     protected $table = 'artikel';
     protected $primaryKey = 'id_artikel';
+    public $timestamps = true;
 
     protected $fillable = [
         'judul',
         'isi',
         'gambar',
-        'tanggal', // tanggal manual
+        'tanggal',
+        'views',
     ];
 }
-

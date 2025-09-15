@@ -10,13 +10,15 @@ class BeritaEvent extends Model
     use HasFactory;
 
     protected $table = 'berita_event';
-    protected $primaryKey = 'id_berita';
+    protected $primaryKey = 'id_berita_event';
+    public $timestamps = true;
 
     protected $fillable = [
         'judul',
         'isi',
         'gambar',
-        'tipe',     // berita atau event
-        'tanggal',  // tanggal manual
+        'tipe',
+        'tanggal',
+        'views',
     ];
 }

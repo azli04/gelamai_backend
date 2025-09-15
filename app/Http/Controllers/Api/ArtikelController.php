@@ -40,7 +40,15 @@ class ArtikelController extends Controller
     {
         try {
             $artikel = Artikel::findOrFail($id);
-            return response()->json(['success' => true, 'data' => $artikel]);
+
+            // Tambah views otomatis setiap kali diakses
+            $artikel->increment('views');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Detail artikel',
+                'data'    => $artikel
+            ]);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Data tidak ditemukan'], 404);
         }

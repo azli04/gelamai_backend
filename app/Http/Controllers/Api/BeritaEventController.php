@@ -41,7 +41,15 @@ class BeritaEventController extends Controller
     {
         try {
             $berita = BeritaEvent::findOrFail($id);
-            return response()->json(['success' => true, 'data' => $berita]);
+
+            // Tambah views otomatis
+            $berita->increment('views');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Detail berita/event',
+                'data'    => $berita
+            ]);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Data tidak ditemukan'], 404);
         }
