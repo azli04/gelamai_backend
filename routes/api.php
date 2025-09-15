@@ -9,6 +9,8 @@ use App\Http\Controllers\Api\AplikasiController;
 use App\Http\Controllers\Api\ArtikelController;
 use App\Http\Controllers\Api\LayananController;
 use App\Http\Controllers\Api\BeritaEventController;
+use App\Http\Controllers\Api\FaqController;
+use App\Http\Controllers\Api\FaqKategoriController;
 
 // ===============================
 // Auth
@@ -69,3 +71,34 @@ Route::middleware(['auth:sanctum', 'role:Super Admin,Admin Web'])->group(functio
 // ===============================
 // Publik boleh lihat
 Route::apiResource('layanans', LayananController::class);
+
+// ===============================
+// FAQ
+// ===============================
+// Public: lihat FAQ & kirim pertanyaan
+Route::get('faq', [FaqController::class, 'index']);
+Route::post('faq', [FaqController::class, 'store']);
+
+// Public: search FAQ
+Route::get('faq/search', [FaqController::class, 'search']);
+
+// Public: filter by kategori
+Route::get('faq/kategori/{id}', [FaqController::class, 'byKategori']);
+
+// Admin: kelola pertanyaan & kategori
+Route::middleware(['auth:sanctum', 'role:Super Admin,Admin Web'])->group(function () {
+    // FAQ pertanyaan
+    Route::get('admin/faq', [FaqController::class, 'adminIndex']);
+    Route::get('admin/faq/pending', [FaqController::class, 'pending']);
+    Route::put('admin/faq/{id}/jawab', [FaqController::class, 'jawab']);
+    Route::put('admin/faq/{id}/tolak', [FaqController::class, 'tolak']);
+    Route::delete('admin/faq/{id}', [FaqController::class, 'destroy']);
+    Route::delete('admin/faq/public', [FaqController::class, 'deletePublic']);
+
+    // FAQ kategori
+    Route::get('admin/faq-kategori', [FaqKategoriController::class, 'index']);
+    Route::post('admin/faq-kategori', [FaqKategoriController::class, 'store']);
+    Route::put('admin/faq-kategori/{id}', [FaqKategoriController::class, 'update']);
+    Route::delete('admin/faq-kategori/{id}', [FaqKategoriController::class, 'destroy']);
+});
+
