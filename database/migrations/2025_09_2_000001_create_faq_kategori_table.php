@@ -9,7 +9,9 @@ return new class extends Migration {
         Schema::create('faq_kategori', function (Blueprint $table) {
             $table->id('id_faq_kategori');
             $table->string('nama', 100);
-            $table->foreignId('admin_role_id')->constrained('roles')->cascadeOnDelete();
+            $table->foreignId('admin_role_id')
+      ->constrained(table: 'roles', column: 'id_role')
+      ->cascadeOnDelete();
             $table->text('deskripsi')->nullable();
             $table->timestamps();
         });

@@ -17,7 +17,7 @@ class DatabaseSeeder extends Seeder
             UsersSeeder::class,        // setelah roles, isi user admin
 
             // Master data
-            KategoriSeeder::class,     // kategori harus ada dulu
+            //KategoriSeeder::class,     // kategori harus ada dulu
             ParameterUjiSeeder::class, // parameter harus ada dulu
             BiayaUjiSeeder::class,     // relasi ke kategori + parameter
 
