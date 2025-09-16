@@ -10,7 +10,7 @@ class BeritaEvent extends Model
     use HasFactory;
 
     protected $table = 'berita_event';
-    protected $primaryKey = 'id_berita_event';
+    protected $primaryKey = 'id_berita'; // ✅ sesuai migration
     public $timestamps = true;
 
     protected $fillable = [
