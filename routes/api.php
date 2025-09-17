@@ -60,6 +60,7 @@ Route::middleware(['auth:sanctum', 'role:Super Admin,Admin Web'])->group(functio
 // ===============================
 // Publik boleh lihat
 Route::apiResource('berita', BeritaEventController::class)->only(['index', 'show']);
+Route::post('/upload-image', [BeritaEventController::class, 'uploadImage']);
 
 // CRUD hanya Super Admin & Admin Web
 Route::middleware(['auth:sanctum', 'role:Super Admin,Admin Web'])->group(function () {
