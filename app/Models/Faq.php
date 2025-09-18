@@ -11,7 +11,14 @@ class Faq extends Model
 
     protected $table = 'faq';
     protected $primaryKey = 'id_faq';
-    protected $fillable = ['pertanyaan','jawaban','status','id_faq_kategori','answered_by'];
+    protected $fillable = [
+        'id_pertanyaan',
+        'pertanyaan',
+        'jawaban',
+        'status',
+        'id_faq_kategori',
+        'answered_by'
+    ];
 
     public function kategori()
     {
@@ -21,5 +28,10 @@ class Faq extends Model
     public function admin()
     {
         return $this->belongsTo(User::class, 'answered_by');
+    }
+
+    public function sumberPertanyaan()
+    {
+        return $this->belongsTo(Pertanyaan::class, 'id_pertanyaan');
     }
 }

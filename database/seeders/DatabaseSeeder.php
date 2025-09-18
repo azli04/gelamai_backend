@@ -17,12 +17,15 @@ class DatabaseSeeder extends Seeder
             UsersSeeder::class,        // setelah roles, isi user admin
 
             // Master data
-            //KategoriSeeder::class,     // kategori harus ada dulu
-            ParameterUjiSeeder::class, // parameter harus ada dulu
-            BiayaUjiSeeder::class,     // relasi ke kategori + parameter
+            //KategoriSeeder::class,     
+            //ParameterUjiSeeder::class, 
+            //BiayaUjiSeeder::class,     // relasi ke kategori + parameter
+
+            // FAQ
+            FaqKategoriSeeder::class,  // ✅ kategori FAQ harus ada dulu
+            //FaqSeeder::class,          // baru data FAQ
 
             // Konten informasi
-            FaqSeeder::class,
             ArtikelSeeder::class,
             BeritaEventSeeder::class,
         ]);
