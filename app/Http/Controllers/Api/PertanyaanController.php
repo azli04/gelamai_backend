@@ -8,74 +8,64 @@ use Illuminate\Http\Request;
 
 class PertanyaanController extends Controller
 {
-    // Submit pertanyaan baru dari user
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'pertanyaan' => 'required|string',
-            'id_faq_kategori' => 'required|exists:faq_kategori,id_faq_kategori',
-        ]);
-
-        $pertanyaan = Pertanyaan::create([
-            'pertanyaan' => $validated['pertanyaan'],
-            'id_faq_kategori' => $validated['id_faq_kategori'],
-            'status' => 'pending',
-        ]);
-
-        return response()->json($pertanyaan, 201);
-    }
-
-    // List semua pertanyaan (untuk admin)
-    public function adminIndex()
-    {
-        return response()->json(
-            Pertanyaan::with(['kategori', 'admin'])->get()
-        );
-    }
-
-    // List pertanyaan pending
-    public function pending()
-    {
-        $pertanyaan = Pertanyaan::where('status', 'pending')
-            ->with('kategori')
-            ->get();
-
-        return response()->json($pertanyaan);
-    }
-
-    // Jawab pertanyaan
-    public function jawab(Request $request, $id)
-    {
         $request->validate([
-            'jawaban' => 'required|string',
+            'nama' => 'required|string|max:255',
+            'profesi' => 'nullable|string|max:255',
+            'tanggal_lahir' => 'nullable|date',
+            'alamat' => 'nullable|string',
+            'email' => 'nullable|email|max:255',
+            'no_hp' => 'nullable|string|max:20',
+            'topik' => 'nullable|string|max:255',
+            'isi_pertanyaan' => 'required|string',
         ]);
 
-        $pertanyaan = Pertanyaan::findOrFail($id);
-        $pertanyaan->jawaban = $request->jawaban;
-        $pertanyaan->status = 'dijawab';
-        $pertanyaan->answered_by = auth()->id();
-        $pertanyaan->save();
+        $pertanyaan = Pertanyaan::create(array_merge(
+            $request->all(),
+            ['status' => Pertanyaan::STATUS_MENUNGGU]
+        ));
 
+        return response()->json([
+            'message' => 'Pertanyaan berhasil dikirim',
+            'data' => $pertanyaan,
+        ], 201);
+    }
+
+    public function index(Request $request)
+    {
+        $query = Pertanyaan::with('faq')->latest();
+
+        // filter status
+        if ($request->status) {
+            $query->where('status', $request->status);
+        }
+
+        // filter admin fungsi
+        if ($request->admin_fungsi_id) {
+            $query->where('admin_fungsi_id', $request->admin_fungsi_id);
+        }
+
+        return response()->json($query->get());
+    }
+
+    public function show($id)
+    {
+        $pertanyaan = Pertanyaan::with('faq')->findOrFail($id);
         return response()->json($pertanyaan);
     }
 
-    // Tolak pertanyaan
-    public function tolak($id)
+    public function update(Request $request, $id)
     {
         $pertanyaan = Pertanyaan::findOrFail($id);
-        $pertanyaan->status = 'ditolak';
-        $pertanyaan->answered_by = auth()->id();
-        $pertanyaan->save();
 
-        return response()->json($pertanyaan);
-    }
+        $pertanyaan->update($request->only([
+            'status', 'jawaban', 'admin_fungsi_id'
+        ]));
 
-    // Hapus pertanyaan
-    public function destroy($id)
-    {
-        $pertanyaan = Pertanyaan::findOrFail($id);
-        $pertanyaan->delete();
-
-        return response()->json(['message' => 'Pertanyaan deleted']);
+        return response()->json([
+            'message' => 'Pertanyaan berhasil diperbarui',
+            'data' => $pertanyaan,
+        ]);
     }
 }

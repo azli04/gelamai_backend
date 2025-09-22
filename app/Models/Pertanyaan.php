@@ -11,26 +11,28 @@ class Pertanyaan extends Model
 
     protected $table = 'pertanyaan';
     protected $primaryKey = 'id_pertanyaan';
+    public $incrementing = true;
+    protected $keyType = 'int';
+    public $timestamps = true;
+
+    const STATUS_MENUNGGU = 'menunggu';
+    const STATUS_DISPOSISI = 'disposisi';
+    const STATUS_DIJAWAB_FUNGSI = 'dijawab fungsi';
+    const STATUS_DIJAWAB_WEB = 'dijawab web';
+    const STATUS_SELESAI = 'selesai';
 
     protected $fillable = [
-        'nama_lengkap',
-        'profesi',
-        'tanggal_lahir',
-        'alamat',
-        'email',
-        'no_hp',
-        'id_faq_kategori',
-        'isi_pertanyaan',
-        'status',
+        'nama', 'profesi', 'tanggal_lahir', 'alamat', 'email', 'no_hp', 'topik',
+        'isi_pertanyaan', 'status', 'admin_fungsi_id', 'jawaban'
     ];
-
-    public function kategori()
-    {
-        return $this->belongsTo(FaqKategori::class, 'id_faq_kategori');
-    }
 
     public function faq()
     {
-        return $this->hasOne(Faq::class, 'id_pertanyaan', 'id_pertanyaan');
+        return $this->hasOne(Faq::class, 'pertanyaan_id', 'id_pertanyaan');
+    }
+
+    public function admin()
+    {
+        return $this->belongsTo(Admin::class, 'admin_fungsi_id', 'id_admin');
     }
 }

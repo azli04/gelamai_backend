@@ -22,10 +22,11 @@ class DatabaseSeeder extends Seeder
             //BiayaUjiSeeder::class,     // relasi ke kategori + parameter
 
             // FAQ
-            FaqKategoriSeeder::class,  // ✅ kategori FAQ harus ada dulu
+            //FaqKategoriSeeder::class,  // ✅ kategori FAQ harus ada dulu
             //FaqSeeder::class,          // baru data FAQ
 
             // Konten informasi
+            AplikasiSeeder::class,
             ArtikelSeeder::class,
             BeritaEventSeeder::class,
         ]);

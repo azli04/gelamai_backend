@@ -4,46 +4,47 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Faq;
+use App\Models\Pertanyaan;
 use Illuminate\Http\Request;
 
 class FaqController extends Controller
 {
-    // Lihat semua FAQ publik
-    public function index(Request $request)
+    public function index()
     {
-        $query = Faq::where('status', 'dijawab')->with('kategori');
-
-        if ($request->kategori) {
-            $query->where('id_faq_kategori', $request->kategori);
-        }
-
-        return response()->json($query->get());
+        return response()->json(Faq::with('pertanyaan')->latest()->get());
     }
 
-    // Cari FAQ berdasarkan keyword
-    public function search(Request $request)
+    public function store(Request $request)
     {
-        $keyword = $request->query('q');
+        $request->validate([
+            'pertanyaan_id' => 'required|exists:pertanyaan,id_pertanyaan',
+            'jawaban' => 'required|string',
+        ]);
 
-        $faq = Faq::where('status', 'dijawab')
-            ->where(function ($q) use ($keyword) {
-                $q->where('pertanyaan', 'like', "%$keyword%")
-                  ->orWhere('jawaban', 'like', "%$keyword%");
-            })
-            ->with('kategori')
-            ->get();
+        $faq = Faq::create([
+            'pertanyaan_id' => $request->pertanyaan_id,
+            'jawaban' => $request->jawaban,
+        ]);
 
-        return response()->json($faq);
+        $pertanyaan = Pertanyaan::findOrFail($request->pertanyaan_id);
+        $pertanyaan->update([
+            'status' => Pertanyaan::STATUS_SELESAI,
+            'jawaban' => $request->jawaban,
+        ]);
+
+        return response()->json([
+            'message' => 'FAQ berhasil dibuat',
+            'data' => $faq,
+        ], 201);
     }
 
-    // Filter FAQ berdasarkan kategori
-    public function byKategori($idKategori)
+    public function destroy($id)
     {
-        $faq = Faq::where('id_faq_kategori', $idKategori)
-            ->where('status', 'dijawab')
-            ->with('kategori')
-            ->get();
+        $faq = Faq::findOrFail($id);
+        $faq->delete();
 
-        return response()->json($faq);
+        return response()->json([
+            'message' => 'FAQ berhasil dihapus'
+        ]);
     }
 }

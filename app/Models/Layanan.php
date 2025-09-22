@@ -9,7 +9,7 @@ class Layanan extends Model
 {
      protected $fillable = [
         'title',       // untuk sidebar
-        'Image',     // cover/thumbnail
+        'image',     // cover/thumbnail
         'details',     // konten bebas (HTML)
     ];
 }

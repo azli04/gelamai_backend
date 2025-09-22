@@ -9,10 +9,10 @@ use App\Http\Controllers\Api\AplikasiController;
 use App\Http\Controllers\Api\ArtikelController;
 use App\Http\Controllers\Api\LayananController;
 use App\Http\Controllers\Api\BeritaEventController;
-use App\Http\Controllers\Api\FaqController;
-use App\Http\Controllers\Api\FaqKategoriController;
 use App\Http\Controllers\Api\PertanyaanController;
-
+use App\Http\Controllers\Api\FaqController;
+use App\Http\Controllers\Api\ProfilController;
+use App\Http\Controllers\Api\RiwayatDisposisiController;
 // ===============================
 // Auth
 // ===============================
@@ -20,6 +20,7 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
 Route::middleware('auth:sanctum')->get('/me', [AuthController::class, 'me']);
 
+// Default user endpoint
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
@@ -61,40 +62,46 @@ Route::middleware(['auth:sanctum', 'role:Super Admin,Admin Web'])->group(functio
 // ===============================
 // Layanan
 // ===============================
-Route::apiResource('layanans', LayananController::class);
-
-// ===============================
-// FAQ
-// ===============================
-// Public
-Route::get('faq', [FaqController::class, 'index']);
-Route::get('faq/search', [FaqController::class, 'search']);
-Route::get('faq/kategori/{id}', [FaqController::class, 'byKategori']);
-
-// Admin
+Route::apiResource('layanans', LayananController::class)->only(['index', 'show']);
 Route::middleware(['auth:sanctum', 'role:Super Admin,Admin Web'])->group(function () {
-    Route::get('admin/faq', [FaqController::class, 'adminIndex']);
-    Route::delete('admin/faq/{id}', [FaqController::class, 'destroy']);
+    Route::apiResource('layanans', LayananController::class)->except(['index', 'show']);
+});
+// ===============================
+// Profil
+// ===============================
+// Publik boleh lihat
+Route::apiResource('profil', ProfilController::class)->only(['index', 'show']);
 
-    // FAQ kategori
-    Route::get('admin/faq-kategori', [FaqKategoriController::class, 'index']);
-    Route::post('admin/faq-kategori', [FaqKategoriController::class, 'store']);
-    Route::put('admin/faq-kategori/{id}', [FaqKategoriController::class, 'update']);
-    Route::delete('admin/faq-kategori/{id}', [FaqKategoriController::class, 'destroy']);
+// CRUD hanya Super Admin & Admin Web
+Route::middleware(['auth:sanctum', 'role:Super Admin,Admin Web'])->group(function () {
+    Route::apiResource('profil', ProfilController::class)->except(['index', 'show']);
 });
 
 // ===============================
-// Pertanyaan
+// FAQ & Pertanyaan
 // ===============================
-// Public
-Route::post('/pertanyaan', [PertanyaanController::class, 'store']);
-Route::get('/pertanyaan/{id}', [PertanyaanController::class, 'show']);
 
-// Admin
-Route::middleware(['auth:sanctum','role:Super Admin,Admin Web'])->group(function () {
-    Route::get('/admin/pertanyaan', [PertanyaanController::class, 'adminIndex']);
-    Route::get('/admin/pertanyaan/pending', [PertanyaanController::class, 'pending']);
-    Route::post('/admin/pertanyaan/{id}/jawab', [PertanyaanController::class, 'jawab']);
-    Route::post('/admin/pertanyaan/{id}/tolak', [PertanyaanController::class, 'tolak']);
-    Route::delete('/admin/pertanyaan/{id}', [PertanyaanController::class, 'destroy']);
+// Publik
+Route::get('faq', [FaqController::class, 'index']);           // lihat FAQ publish
+Route::get('faq/search', [FaqController::class, 'search']);   // search FAQ
+Route::post('pertanyaan', [PertanyaanController::class, 'store']); // kirim pertanyaan baru
+
+// ===============================
+// Admin Web & Super Admin
+// ===============================
+Route::middleware(['auth:sanctum', 'role:Super Admin,Admin Web'])->group(function () {
+    Route::get('admin/pertanyaan', [PertanyaanController::class, 'index']); // semua pertanyaan + filter
+    Route::put('admin/pertanyaan/{id}/jawab-web', [PertanyaanController::class, 'jawabWeb']); // jawab langsung
+    Route::put('admin/pertanyaan/{id}/disposisi', [PertanyaanController::class, 'disposisi']); // disposisi ke admin fungsi
+    Route::put('admin/pertanyaan/{id}/edit-jawaban', [PertanyaanController::class, 'editJawaban']); // edit jawaban
+    Route::put('admin/pertanyaan/{id}/publish', [PertanyaanController::class, 'publish']); // publish ke FAQ
+    Route::delete('admin/pertanyaan/{id}', [PertanyaanController::class, 'destroy']); // hapus pertanyaan
+});
+
+// ===============================
+// Admin Fungsi & Super Admin
+// ===============================
+Route::middleware(['auth:sanctum', 'role:Super Admin,Admin Fungsi'])->group(function () {
+    Route::get('admin/pertanyaan/fungsi', [PertanyaanController::class, 'fungsiIndex']); // pertanyaan disposisi ke fungsi
+    Route::put('admin/pertanyaan/{id}/jawab-fungsi', [PertanyaanController::class, 'jawabFungsi']); // jawab fungsi
 });

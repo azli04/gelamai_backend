@@ -12,13 +12,42 @@ class BeritaEventController extends Controller
 {
     // 🔹 Get all berita/event
     public function index(Request $request)
-    {
-        // ambil query ?per_page=10 kalau ada, default 10
+{
+    try {
+        $query = BeritaEvent::query();
+
+        // 🔹 Filter by type (berita / event)
+        if ($request->has('type') && in_array($request->type, ['berita', 'event'])) {
+            $query->where('tipe', $request->type);
+        }
+
+        // 🔹 Search by judul / isi
+        if ($request->has('search') && $request->search !== '') {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('judul', 'LIKE', "%$search%")
+                  ->orWhere('isi', 'LIKE', "%$search%");
+            });
+        }
+
+        // 🔹 Sorting
+        switch ($request->get('sort', 'newest')) {
+            case 'oldest':
+                $query->orderBy('tanggal', 'asc');
+                break;
+            case 'popular':
+                $query->orderBy('views', 'desc');
+                break;
+            default: // newest
+                $query->orderBy('tanggal', 'desc');
+                break;
+        }
+
+        // 🔹 Pagination
         $perPage = $request->get('per_page', 10);
+        $berita = $query->paginate($perPage);
 
-        $berita = BeritaEvent::orderBy('tanggal', 'desc')->paginate($perPage);
-
-        // tambahin image_url biar frontend bisa langsung load
+        // Tambahin image_url
         $berita->getCollection()->transform(function ($item) {
             $item->image_url = $item->gambar ? url('storage/' . $item->gambar) : null;
             return $item;
@@ -26,7 +55,7 @@ class BeritaEventController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $berita->items(), // data berita aja
+            'data' => $berita->items(),
             'meta' => [
                 'current_page' => $berita->currentPage(),
                 'per_page' => $berita->perPage(),
@@ -34,7 +63,13 @@ class BeritaEventController extends Controller
                 'last_page' => $berita->lastPage(),
             ],
         ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => $e->getMessage(),
+        ], 500);
     }
+}
 
     public function uploadImage(Request $request)
     {
