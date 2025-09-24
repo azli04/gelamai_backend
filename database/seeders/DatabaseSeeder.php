@@ -16,14 +16,9 @@ class DatabaseSeeder extends Seeder
             RolesSeeder::class,        // duluan, karena user butuh role
             UsersSeeder::class,        // setelah roles, isi user admin
 
-            // Master data
             //KategoriSeeder::class,     
             //ParameterUjiSeeder::class, 
             //BiayaUjiSeeder::class,     // relasi ke kategori + parameter
-
-            // FAQ
-            //FaqKategoriSeeder::class,  // ✅ kategori FAQ harus ada dulu
-            //FaqSeeder::class,          // baru data FAQ
 
             // Konten informasi
             AplikasiSeeder::class,

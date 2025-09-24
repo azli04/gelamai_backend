@@ -10,9 +10,11 @@ use App\Http\Controllers\Api\ArtikelController;
 use App\Http\Controllers\Api\LayananController;
 use App\Http\Controllers\Api\BeritaEventController;
 use App\Http\Controllers\Api\PertanyaanController;
-use App\Http\Controllers\Api\FaqController;
 use App\Http\Controllers\Api\ProfilController;
-use App\Http\Controllers\Api\RiwayatDisposisiController;
+use App\Http\Controllers\Api\FaqController;
+use App\Http\Controllers\Api\AdminPertanyaanController;
+use App\Http\Controllers\Api\AdminFungsiController;
+
 // ===============================
 // Auth
 // ===============================
@@ -77,31 +79,36 @@ Route::middleware(['auth:sanctum', 'role:Super Admin,Admin Web'])->group(functio
     Route::apiResource('profil', ProfilController::class)->except(['index', 'show']);
 });
 
-// ===============================
-// FAQ & Pertanyaan
-// ===============================
+// ========================
+// ROUTE UNTUK PUBLIK
+// ========================
+Route::post('/pertanyaan', [PertanyaanController::class, 'store']); 
+// publik bisa kirim pertanyaan
 
-// Publik
-Route::get('faq', [FaqController::class, 'index']);           // lihat FAQ publish
-Route::get('faq/search', [FaqController::class, 'search']);   // search FAQ
-Route::post('pertanyaan', [PertanyaanController::class, 'store']); // kirim pertanyaan baru
+Route::get('/faq', [FaqController::class, 'index']);  
+// publik bisa lihat FAQ
+// contoh: /faq?search=izin+edar (search filter)
 
-// ===============================
-// Admin Web & Super Admin
-// ===============================
-Route::middleware(['auth:sanctum', 'role:Super Admin,Admin Web'])->group(function () {
-    Route::get('admin/pertanyaan', [PertanyaanController::class, 'index']); // semua pertanyaan + filter
-    Route::put('admin/pertanyaan/{id}/jawab-web', [PertanyaanController::class, 'jawabWeb']); // jawab langsung
-    Route::put('admin/pertanyaan/{id}/disposisi', [PertanyaanController::class, 'disposisi']); // disposisi ke admin fungsi
-    Route::put('admin/pertanyaan/{id}/edit-jawaban', [PertanyaanController::class, 'editJawaban']); // edit jawaban
-    Route::put('admin/pertanyaan/{id}/publish', [PertanyaanController::class, 'publish']); // publish ke FAQ
-    Route::delete('admin/pertanyaan/{id}', [PertanyaanController::class, 'destroy']); // hapus pertanyaan
-});
+// ========================
+// ROUTE UNTUK ADMIN / SUPER ADMIN
+// ========================
+Route::middleware(['auth:sanctum', RoleMiddleware::class.':Admin Web,Super Admin'])->group(function () {
+    
+    // manajemen pertanyaan
+    Route::get('/admin/pertanyaan', [AdminPertanyaanController::class, 'index']); 
+    Route::get('/admin/pertanyaan/{id}', [AdminPertanyaanController::class, 'show']);
+    Route::post('/admin/pertanyaan/{id}/disposisi', [AdminPertanyaanController::class, 'disposisi']);
+    Route::post('/admin/pertanyaan/{id}/jawab', [AdminPertanyaanController::class, 'jawab']);
+    Route::delete('/admin/pertanyaan/{id}', [AdminPertanyaanController::class, 'destroy']);
 
-// ===============================
-// Admin Fungsi & Super Admin
-// ===============================
-Route::middleware(['auth:sanctum', 'role:Super Admin,Admin Fungsi'])->group(function () {
-    Route::get('admin/pertanyaan/fungsi', [PertanyaanController::class, 'fungsiIndex']); // pertanyaan disposisi ke fungsi
-    Route::put('admin/pertanyaan/{id}/jawab-fungsi', [PertanyaanController::class, 'jawabFungsi']); // jawab fungsi
+    // manajemen fungsi (opsional, kalau dipakai)
+    Route::get('/admin/fungsi', [AdminFungsiController::class, 'index']);
+    Route::post('/admin/fungsi', [AdminFungsiController::class, 'store']);
+    Route::put('/admin/fungsi/{id}', [AdminFungsiController::class, 'update']);
+    Route::delete('/admin/fungsi/{id}', [AdminFungsiController::class, 'destroy']);
+
+    // publish pertanyaan ke FAQ
+    Route::post('/admin/faq', [FaqController::class, 'store']);
+    Route::put('/admin/faq/{id}', [FaqController::class, 'update']);
+    Route::delete('/admin/faq/{id}', [FaqController::class, 'destroy']);
 });

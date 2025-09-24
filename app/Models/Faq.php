@@ -10,17 +10,18 @@ class Faq extends Model
     use HasFactory;
 
     protected $table = 'faq';
-    protected $primaryKey = 'id_faq';
-    public $incrementing = true;
-    protected $keyType = 'int';
-    public $timestamps = true;
 
     protected $fillable = [
-        'pertanyaan_id', 'jawaban'
+        'pertanyaan','jawaban','status','pertanyaan_id','published_by'
     ];
 
     public function pertanyaan()
     {
-        return $this->belongsTo(Pertanyaan::class, 'pertanyaan_id', 'id_pertanyaan');
+        return $this->belongsTo(Pertanyaan::class);
+    }
+
+    public function publisher()
+    {
+        return $this->belongsTo(User::class, 'published_by');
     }
 }
