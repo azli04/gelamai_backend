@@ -42,12 +42,7 @@ class UsersSeeder extends Seeder
                 'password' => 'password123',
                 'role' => 'Admin Web',
             ],
-            [
-                'nama' => 'Admin Operasional',
-                'email' => 'operasional@example.com',
-                'password' => 'password123',
-                'role' => 'Admin Operasional',
-            ],
+            
         ];
 
         foreach ($users as $u) {

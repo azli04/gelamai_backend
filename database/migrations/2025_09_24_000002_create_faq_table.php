@@ -7,12 +7,25 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void {
         Schema::create('faq', function (Blueprint $table) {
-            $table->id();
+            $table->id('id_faq'); // PK custom
             $table->string('pertanyaan');
             $table->text('jawaban');
             $table->boolean('status')->default(true);
-            $table->foreignId('pertanyaan_id')->nullable()->constrained('pertanyaan')->nullOnDelete();
-            $table->foreignId('published_by')->constrained('users')->cascadeOnDelete();
+
+            // relasi ke pertanyaan
+            $table->unsignedBigInteger('id_pertanyaan')->nullable();
+            $table->foreign('id_pertanyaan')
+                  ->references('id_pertanyaan')
+                  ->on('pertanyaan')
+                  ->nullOnDelete();
+
+            // relasi ke users
+            $table->unsignedBigInteger('published_by');
+            $table->foreign('published_by')
+                  ->references('id_user')
+                  ->on('users')
+                  ->cascadeOnDelete();
+
             $table->timestamps();
         });
     }

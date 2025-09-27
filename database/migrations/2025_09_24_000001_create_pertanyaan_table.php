@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void {
         Schema::create('pertanyaan', function (Blueprint $table) {
-            $table->id();
+            $table->id('id_pertanyaan'); // PK custom
             $table->string('nama');
             $table->string('profesi')->nullable();
             $table->date('tanggal_lahir')->nullable();
@@ -24,8 +24,20 @@ return new class extends Migration {
                 'dijawab web',
                 'selesai'
             ])->default('menunggu');
-            $table->foreignId('fungsi_id')->nullable()->constrained('users')->nullOnDelete();
-            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+
+            // relasi ke users
+            $table->unsignedBigInteger('assigned_to')->nullable();
+            $table->foreign('assigned_to')
+                  ->references('id_user')
+                  ->on('users')
+                  ->nullOnDelete();
+
+            $table->unsignedBigInteger('created_by')->nullable();
+            $table->foreign('created_by')
+                  ->references('id_user')
+                  ->on('users')
+                  ->nullOnDelete();
+
             $table->timestamps();
         });
     }

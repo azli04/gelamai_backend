@@ -17,7 +17,7 @@ class RiwayatDisposisi extends Model
 
     public function pertanyaan()
     {
-        return $this->belongsTo(Pertanyaan::class);
+        return $this->belongsTo(Pertanyaan::class, 'pertanyaan_id');
     }
 
     public function dari()
