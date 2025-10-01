@@ -19,5 +19,6 @@ class Artikel extends Model
         'gambar',
         'tanggal',
         'views',
+        'status',
     ];
 }

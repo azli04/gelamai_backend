@@ -10,53 +10,91 @@ use Intervention\Image\Laravel\Facades\Image;
 
 class BeritaEventController extends Controller
 {
-    // 🔹 Get all berita/event
-    public function index()
+    // 🔹 Get all berita/event (pagination + filter)
+    public function index(Request $request)
     {
-        $berita = BeritaEvent::orderBy('tanggal', 'desc')->get();
+        try {
+            $perPage = $request->get('per_page', 10);
 
-        // tambahin image_url biar frontend bisa langsung load
-        $berita->map(function ($item) {
-            $item->image_url = $item->gambar ? url('storage/' . $item->gambar) : null;
-            return $item;
-        });
+            $query = BeritaEvent::query();
 
-        return response()->json(['success' => true, 'data' => $berita]);
+            // filter tipe (berita / event)
+            if ($request->has('type') && in_array($request->type, ['berita', 'event'])) {
+                $query->where('tipe', $request->type);
+            }
+
+            // search judul / isi
+            if ($request->has('search') && $request->search !== '') {
+                $search = $request->search;
+                $query->where(function ($q) use ($search) {
+                    $q->where('judul', 'LIKE', "%$search%")
+                        ->orWhere('isi', 'LIKE', "%$search%");
+                });
+            }
+
+            // sorting
+            switch ($request->get('sort', 'newest')) {
+                case 'oldest':
+                    $query->orderBy('tanggal', 'asc');
+                    break;
+                case 'popular':
+                    $query->orderBy('views', 'desc');
+                    break;
+                default:
+                    $query->orderBy('tanggal', 'desc');
+                    break;
+            }
+
+            $berita = $query->paginate($perPage);
+
+            // tambahin image_url
+            $berita->getCollection()->transform(function ($item) {
+                $item->image_url = $item->gambar ? url('storage/' . $item->gambar) : null;
+                return $item;
+            });
+
+            return response()->json([
+                'success' => true,
+                'data' => $berita->items(),
+                'meta' => [
+                    'current_page' => $berita->currentPage(),
+                    'per_page' => $berita->perPage(),
+                    'total' => $berita->total(),
+                    'last_page' => $berita->lastPage(),
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
     }
 
-public function uploadImage(Request $request)
-{
-    try {
-        $request->validate([
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-        ]);
+    // 🔹 Upload image
+    public function uploadImage(Request $request)
+    {
+        try {
+            $request->validate([
+                'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            ]);
 
-        $file = $request->file('image');
-        $filename = uniqid() . '.webp';
+            $file = $request->file('image');
+            $filename = uniqid() . '.webp';
 
-        $img = \Intervention\Image\Laravel\Facades\Image::read($file)
-            ->resize(1200, null, function ($constraint) {
-                $constraint->aspectRatio();
-                $constraint->upsize();
-            })
-            ->toWebp(80);
+            $img = Image::read($file)
+                ->resize(1200, null, function ($constraint) {
+                    $constraint->aspectRatio();
+                    $constraint->upsize();
+                })
+                ->toWebp(80);
 
-        \Illuminate\Support\Facades\Storage::disk('public')->put("berita_images/$filename", (string) $img);
+            Storage::disk('public')->put("berita_images/$filename", (string) $img);
 
-        $url = url("storage/berita_images/$filename");
+            $url = url("storage/berita_images/$filename");
 
-        return response()->json([
-            'success' => true,
-            'url' => $url,
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'message' => $e->getMessage(),
-        ], 500);
+            return response()->json(['success' => true, 'url' => $url]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
     }
-}
-
 
     // 🔹 Store berita/event baru
     public function store(Request $request)
@@ -68,9 +106,11 @@ public function uploadImage(Request $request)
                 'gambar'  => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
                 'tipe'    => 'required|in:berita,event',
                 'tanggal' => 'nullable|date',
+                'status'  => 'nullable|in:draft,publish', // ✅ status
             ]);
 
-            // handle upload image
+            $data['status'] = $data['status'] ?? 'draft';
+
             if ($request->hasFile('gambar')) {
                 $file = $request->file('gambar');
                 $filename = uniqid() . '.webp';
@@ -96,27 +136,22 @@ public function uploadImage(Request $request)
         }
     }
 
-    // 🔹 Show detail berita/event
+    // 🔹 Show detail
     public function show($id)
     {
         try {
             $berita = BeritaEvent::findOrFail($id);
 
-            // Tambah views otomatis
             $berita->increment('views');
             $berita->image_url = $berita->gambar ? url('storage/' . $berita->gambar) : null;
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Detail berita/event',
-                'data'    => $berita
-            ]);
+            return response()->json(['success' => true, 'data' => $berita]);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Data tidak ditemukan'], 404);
         }
     }
 
-    // 🔹 Update berita/event
+    // 🔹 Update
     public function update(Request $request, $id)
     {
         try {
@@ -128,10 +163,10 @@ public function uploadImage(Request $request)
                 'gambar'  => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
                 'tipe'    => 'sometimes|in:berita,event',
                 'tanggal' => 'nullable|date',
+                'status'  => 'sometimes|in:draft,publish',
             ]);
 
             if ($request->hasFile('gambar')) {
-                // hapus gambar lama kalau ada
                 if ($berita->gambar && Storage::disk('public')->exists($berita->gambar)) {
                     Storage::disk('public')->delete($berita->gambar);
                 }
@@ -152,6 +187,7 @@ public function uploadImage(Request $request)
             }
 
             $berita->update($data);
+            $berita->refresh();
             $berita->image_url = $berita->gambar ? url('storage/' . $berita->gambar) : null;
 
             return response()->json(['success' => true, 'data' => $berita]);
@@ -160,7 +196,7 @@ public function uploadImage(Request $request)
         }
     }
 
-    // 🔹 Delete berita/event
+    // 🔹 Delete
     public function destroy($id)
     {
         try {
@@ -173,6 +209,29 @@ public function uploadImage(Request $request)
             $berita->delete();
 
             return response()->json(['success' => true, 'message' => 'Berita/Event berhasil dihapus']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    // 🔹 Publish berita/event
+    public function publish($id)
+    {
+        try {
+            $berita = BeritaEvent::findOrFail($id);
+
+            if ($berita->status === 'publish') {
+                return response()->json(['success' => false, 'message' => 'Berita/Event sudah dipublish'], 400);
+            }
+
+            $berita->update(['status' => 'publish']);
+            $berita->refresh();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Berita/Event berhasil dipublish',
+                'data' => $berita,
+            ]);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }

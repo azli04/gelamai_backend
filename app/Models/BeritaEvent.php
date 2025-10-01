@@ -20,5 +20,6 @@ class BeritaEvent extends Model
         'tipe',
         'tanggal',
         'views',
+        'status',
     ];
 }

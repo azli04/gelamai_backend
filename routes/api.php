@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\LayananController;
 use App\Http\Controllers\Api\BeritaEventController;
 use App\Http\Controllers\Api\FaqController;
 use App\Http\Controllers\Api\FaqKategoriController;
+use App\Http\Controllers\Api\ProfilController;
 
 // ===============================
 // Auth
@@ -50,28 +51,54 @@ Route::middleware(['auth:sanctum', 'role:Super Admin,Admin Web'])->group(functio
 // Publik boleh lihat
 Route::apiResource('artikel', ArtikelController::class)->only(['index', 'show']);
 
-// CRUD hanya Super Admin & Admin Web
+// CRUD & Publish hanya Super Admin & Admin Web
 Route::middleware(['auth:sanctum', 'role:Super Admin,Admin Web'])->group(function () {
     Route::apiResource('artikel', ArtikelController::class)->except(['index', 'show']);
+
+    // 🔹 Publish artikel
+    Route::post('/artikel/{id}/publish', [ArtikelController::class, 'publish'])
+        ->name('artikel.publish');
 });
 
 // ===============================
 // Berita & Event
 // ===============================
+
 // Publik boleh lihat
 Route::apiResource('berita', BeritaEventController::class)->only(['index', 'show']);
 Route::post('/upload-image', [BeritaEventController::class, 'uploadImage']);
 
-// CRUD hanya Super Admin & Admin Web
+// CRUD & Publish hanya Super Admin & Admin Web
 Route::middleware(['auth:sanctum', 'role:Super Admin,Admin Web'])->group(function () {
     Route::apiResource('berita', BeritaEventController::class)->except(['index', 'show']);
+
+    // 🔹 Publish berita/event
+    Route::post('/berita/{id}/publish', [BeritaEventController::class, 'publish'])
+        ->name('berita.publish');
 });
 
 // ===============================
 // Layanan
 // ===============================
 // Publik boleh lihat
-Route::apiResource('layanans', LayananController::class);
+Route::apiResource('layanans', LayananController::class)->only(['index', 'show']);
+
+// CRUD hanya Super Admin & Admin Web
+Route::middleware(['auth:sanctum', 'role:Super Admin,Admin Web'])->group(function () {
+    Route::apiResource('layanans', LayananController::class)->except(['index', 'show']);
+});
+
+// ===============================
+// Profil
+// ===============================
+// Publik boleh lihat
+Route::apiResource('profil', ProfilController::class)->only(['index', 'show']);
+
+// CRUD hanya Super Admin & Admin Web
+Route::middleware(['auth:sanctum', 'role:Super Admin,Admin Web'])->group(function () {
+    Route::apiResource('profil', ProfilController::class)->except(['index', 'show']);
+});
+
 
 // ===============================
 // FAQ
