@@ -16,7 +16,6 @@ class RolesSeeder extends Seeder
             'Admin Fungsi',
             'Admin Whistle Blowing',
             'Admin Web',
-            'Admin Operasional',
         ];
 
         foreach ($roles as $role) {
