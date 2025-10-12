@@ -13,7 +13,7 @@ class LayananController extends Controller
     public function index()
     {
         return response()->json(
-            Layanan::all(['id', 'title', 'image'])
+            Layanan::all(['id', 'title', 'image', 'link_url'])
         );
     }
 
@@ -34,9 +34,10 @@ class LayananController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'title'   => 'required|string|max:255',
-            'details' => 'nullable|string',
-            'image'   => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
+            'title'    => 'required|string|max:255',
+            'details'  => 'nullable|string',
+            'link_url' => 'nullable|url|max:255', // <-- validasi link
+            'image'    => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
         ]);
 
         if ($request->hasFile('image')) {
@@ -58,9 +59,10 @@ class LayananController extends Controller
         $layanan = Layanan::findOrFail($id);
 
         $data = $request->validate([
-            'title'   => 'required|string|max:255',
-            'details' => 'nullable|string',
-            'image'   => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
+            'title'    => 'required|string|max:255',
+            'details'  => 'nullable|string',
+            'link_url' => 'nullable|url|max:255', // <-- validasi link
+            'image'    => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
         ]);
 
         if ($request->hasFile('image')) {
