@@ -17,7 +17,6 @@ class ArtikelController extends Controller
 
         $artikel = Artikel::orderBy('tanggal', 'desc')->paginate($perPage);
 
-        // tambahin image_url biar frontend bisa langsung load
         $artikel->getCollection()->transform(function ($item) {
             $item->image_url = $item->gambar ? url('storage/' . $item->gambar) : null;
             return $item;
@@ -63,57 +62,61 @@ class ArtikelController extends Controller
             ]);
         } catch (\Exception $e) {
             return response()->json(
-                [
-                    'success' => false,
-                    'message' => $e->getMessage(),
-                ],
-                500,
+                ['success' => false, 'message' => $e->getMessage()],
+                500
             );
         }
     }
 
     // 🔹 Store artikel baru
-    public function store(Request $request)
-    {
-        try {
-            $data = $request->validate([
-                'judul'   => 'required|string|max:150',
-                'isi'     => 'required|string',
-                'gambar'  => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-                'tanggal' => 'nullable|date',
-                'status'  => 'nullable|in:draft,publish', // ✅ TAMBAH VALIDATION STATUS
-            ]);
+public function store(Request $request)
+{
+    try {
+        $data = $request->validate([
+            'judul'   => 'required|string|max:150',
+            'isi'     => 'required|string',
+            'gambar'  => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'tanggal' => 'nullable|date',
+            'status'  => 'nullable|in:draft,publish',
+        ]);
 
-<<<<<<< HEAD
-            // default status = draft kalau tidak ada
-            $data['status'] = $data['status'] ?? 'draft';
+        $data['status'] = $data['status'] ?? 'draft';
+        $data['views'] = 0;
 
-=======
->>>>>>> 628a5af71c44ffc5631f1b29a002baa03bcf40ce
-            if ($request->hasFile('gambar')) {
-                $file = $request->file('gambar');
-                $filename = uniqid() . '.webp';
+        // 🧹 Bersihin HTML dari isi
+        $data['isi'] = strip_tags($data['isi']);
 
-                $img = Image::read($file)
-                    ->resize(1200, null, function ($constraint) {
-                        $constraint->aspectRatio();
-                        $constraint->upsize();
-                    })
-                    ->toWebp(80);
+        if ($request->hasFile('gambar')) {
+            $file = $request->file('gambar');
+            $filename = uniqid() . '.webp';
 
-                Storage::disk('public')->put("artikel_images/$filename", (string) $img);
+            $img = Image::read($file)
+                ->resize(1200, null, function ($constraint) {
+                    $constraint->aspectRatio();
+                    $constraint->upsize();
+                })
+                ->toWebp(80);
 
-                $data['gambar'] = "artikel_images/$filename";
-            }
+            Storage::disk('public')->put("artikel_images/$filename", (string) $img);
 
-            $artikel = Artikel::create($data);
-            $artikel->image_url = $artikel->gambar ? url('storage/' . $artikel->gambar) : null;
-
-            return response()->json(['success' => true, 'data' => $artikel], 201);
-        } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+            // Simpan path di DB
+            $data['gambar'] = "artikel_images/$filename";
         }
+
+        $artikel = Artikel::create($data);
+
+        // Tambahkan url akses gambar
+        $artikel->image_url = $artikel->gambar ? url('storage/' . $artikel->gambar) : null;
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Artikel berhasil dibuat',
+            'data'    => $artikel
+        ], 201);
+    } catch (\Exception $e) {
+        return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
     }
+}
 
     // 🔹 Show detail artikel
     public function show($id)
@@ -121,7 +124,6 @@ class ArtikelController extends Controller
         try {
             $artikel = Artikel::findOrFail($id);
 
-            // Tambah views otomatis
             $artikel->increment('views');
             $artikel->image_url = $artikel->gambar ? url('storage/' . $artikel->gambar) : null;
 
@@ -135,29 +137,25 @@ class ArtikelController extends Controller
         }
     }
 
-<<<<<<< HEAD
-    // 🔹 Update artikel - FIXED VERSION
-=======
     // 🔹 Update artikel
->>>>>>> 628a5af71c44ffc5631f1b29a002baa03bcf40ce
     public function update(Request $request, $id)
     {
         try {
             $artikel = Artikel::findOrFail($id);
 
             $data = $request->validate([
-                'judul'   => 'sometimes|string|max:150',
-                'isi'     => 'sometimes|string',
+                'judul'   => 'nullable|string|max:150',
+                'isi'     => 'nullable|string',
                 'gambar'  => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
                 'tanggal' => 'nullable|date',
-                'status'  => 'sometimes|in:draft,publish', // ✅ TAMBAH STATUS VALIDATION
+                'status'  => 'nullable|in:draft,publish',
             ]);
 
-<<<<<<< HEAD
-            
-=======
+            if (isset($data['isi'])) {
+                $data['isi'] = strip_tags($data['isi']);
+            }
+
             if ($request->hasFile('gambar')) {
-                // hapus gambar lama kalau ada
                 if ($artikel->gambar && Storage::disk('public')->exists($artikel->gambar)) {
                     Storage::disk('public')->delete($artikel->gambar);
                 }
@@ -173,46 +171,15 @@ class ArtikelController extends Controller
                     ->toWebp(80);
 
                 Storage::disk('public')->put("artikel_images/$filename", (string) $img);
-
                 $data['gambar'] = "artikel_images/$filename";
             }
 
             $artikel->update($data);
-            $artikel->image_url = $artikel->gambar ? url('storage/' . $artikel->gambar) : null;
->>>>>>> 628a5af71c44ffc5631f1b29a002baa03bcf40ce
-
-            if ($request->hasFile('gambar')) {
-                // hapus gambar lama kalau ada
-                if ($artikel->gambar && Storage::disk('public')->exists($artikel->gambar)) {
-                    Storage::disk('public')->delete($artikel->gambar);
-                }
-
-                $file = $request->file('gambar');
-                $filename = uniqid() . '.webp';
-
-                $img = Image::read($file)
-                    ->resize(1200, null, function ($constraint) {
-                        $constraint->aspectRatio();
-                        $constraint->upsize();
-                    })
-                    ->toWebp(80);
-
-                Storage::disk('public')->put("artikel_images/$filename", (string) $img);
-
-                $data['gambar'] = "artikel_images/$filename";
-            }
-
-            // Update artikel dengan data yang sudah tervalidasi (termasuk status)
-            $artikel->update($data);
-            $artikel->refresh(); // Reload dari database
+            $artikel->refresh();
             $artikel->image_url = $artikel->gambar ? url('storage/' . $artikel->gambar) : null;
 
-            // 🔍 Debug log setelah update
-           
-            return response()->json(['success' => true, 'data' => $artikel]);
+            return response()->json(['success' => true, 'message' => 'Artikel berhasil diupdate', 'data' => $artikel]);
         } catch (\Exception $e) {
-          
-            
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
@@ -234,7 +201,6 @@ class ArtikelController extends Controller
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
-<<<<<<< HEAD
 
     // 🔹 Publish artikel
     public function publish($id)
@@ -261,6 +227,4 @@ class ArtikelController extends Controller
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
-=======
->>>>>>> 628a5af71c44ffc5631f1b29a002baa03bcf40ce
 }
