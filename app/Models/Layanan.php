@@ -11,5 +11,6 @@ class Layanan extends Model
         'title',       // untuk sidebar
         'image',     // cover/thumbnail
         'details',     // konten bebas (HTML)
+        'link_url',
     ];
 }

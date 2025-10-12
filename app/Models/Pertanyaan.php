@@ -10,12 +10,9 @@ class Pertanyaan extends Model
     use HasFactory;
 
     protected $table = 'pertanyaan';
-    protected $primaryKey = 'id_pertanyaan'; // 👈 WAJIB
-    public $incrementing = true;
-    protected $keyType = 'int';
 
     protected $fillable = [
-        'nama',
+        'nama_lengkap',
         'profesi',
         'tanggal_lahir',
         'alamat',
@@ -23,30 +20,39 @@ class Pertanyaan extends Model
         'no_hp',
         'topik',
         'isi_pertanyaan',
-        'jawaban',
-        'status',
-        'fungsi_id',
-        'created_by'
+        'status'
     ];
 
-    public function disposisi()
-    {
-        return $this->hasMany(RiwayatDisposisi::class, 'pertanyaan_id');
-    }
+    protected $casts = [
+        'tanggal_lahir' => 'date',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime'
+    ];
 
+    // Relasi ke FAQ
     public function faq()
     {
-        return $this->hasOne(Faq::class, 'pertanyaan_id');
+        return $this->hasOne(Faq::class, 'question_id');
     }
 
-    public function fungsiTujuan()
+    // Scope untuk filter status
+    public function scopePending($query)
     {
-        return $this->belongsTo(User::class, 'fungsi_id');
+        return $query->where('status', 'pending');
     }
 
-    // 👇 Supaya route model binding pakai id_pertanyaan
-    public function getRouteKeyName()
+    public function scopeProcessed($query)
     {
-        return 'id_pertanyaan';
+        return $query->where('status', 'processed');
+    }
+
+    public function scopePublished($query)
+    {
+        return $query->where('status', 'published');
+    }
+
+    public function scopeRejected($query)
+    {
+        return $query->where('status', 'rejected');
     }
 }
