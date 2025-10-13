@@ -14,7 +14,7 @@ use App\Http\Controllers\Api\ChartLayananController;
 use App\Http\Controllers\Api\ContactInfoController;
 use App\Http\Controllers\Api\PertanyaanController;
 use App\Http\Controllers\Api\FaqController;
-
+use App\Http\Controllers\Api\PengaduanController;
 
 
 
@@ -157,4 +157,15 @@ Route::middleware(['auth:sanctum', 'role:Super Admin,Admin Pengaduan'])->group(f
     Route::put('faq/{id}', [FaqController::class, 'update']);
     Route::delete('faq/{id}', [FaqController::class, 'destroy']);
     Route::patch('faq/{id}/toggle-active', [FaqController::class, 'toggleActive']);
+});
+
+// 🔹 Public Route - Form Pengaduan (tidak perlu login)
+Route::post('pengaduan', [PengaduanController::class, 'store']);
+
+// 🔹 Admin Routes - Protected (harus login sebagai admin)
+Route::middleware(['auth:sanctum', 'role:Super Admin,Admin Pengaduan'])->group(function () {
+    Route::get('pengaduan', [PengaduanController::class, 'index']);
+    Route::get('pengaduan/{id}', [PengaduanController::class, 'show']);
+    Route::patch('pengaduan/{id}/status', [PengaduanController::class, 'updateStatus']);
+    Route::delete('pengaduan/{id}', [PengaduanController::class, 'destroy']);
 });

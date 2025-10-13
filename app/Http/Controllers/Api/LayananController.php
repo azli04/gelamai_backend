@@ -9,34 +9,57 @@ use Illuminate\Support\Facades\Storage;
 
 class LayananController extends Controller
 {
-    // Ambil semua layanan (misalnya untuk sidebar, tampilkan juga image thumbnail kalau ada)
+    // ===============================
+    // GET ALL LAYANAN (Public)
+    // ===============================
     public function index()
     {
-        return response()->json(
-            Layanan::all(['id', 'title', 'image', 'link_url'])
-        );
+        $data = Layanan::select('id', 'title', 'details', 'link_url', 'image')
+            ->orderBy('id', 'asc')
+            ->get()
+            ->map(function ($item) {
+                if ($item->image) {
+                    $item->image = Storage::url($item->image);
+                } else {
+                    $item->image = asset('images/default-layanan.png');
+                }
+                return $item;
+            });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Daftar layanan',
+            'data' => $data
+        ]);
     }
 
-    // Ambil satu layanan lengkap
+    // ===============================
+    // GET DETAIL LAYANAN (Public)
+    // ===============================
     public function show($id)
     {
         $layanan = Layanan::findOrFail($id);
 
-        // kalau ada image, kembalikan URL lengkap
         if ($layanan->image) {
             $layanan->image = Storage::url($layanan->image);
         }
 
-        return response()->json($layanan);
+        return response()->json([
+            'success' => true,
+            'message' => 'Detail layanan',
+            'data' => $layanan
+        ]);
     }
 
-    // Tambah layanan baru
+    // ===============================
+    // CREATE LAYANAN (Admin Only)
+    // ===============================
     public function store(Request $request)
     {
         $data = $request->validate([
             'title'    => 'required|string|max:255',
             'details'  => 'nullable|string',
-            'link_url' => 'nullable|url|max:255', // <-- validasi link
+            'link_url' => 'nullable|url|max:255',
             'image'    => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
         ]);
 
@@ -50,10 +73,16 @@ class LayananController extends Controller
             $layanan->image = Storage::url($layanan->image);
         }
 
-        return response()->json($layanan, 201);
+        return response()->json([
+            'success' => true,
+            'message' => 'Layanan berhasil ditambahkan',
+            'data' => $layanan
+        ], 201);
     }
 
-    // Update layanan
+    // ===============================
+    // UPDATE LAYANAN (Admin Only)
+    // ===============================
     public function update(Request $request, $id)
     {
         $layanan = Layanan::findOrFail($id);
@@ -61,12 +90,11 @@ class LayananController extends Controller
         $data = $request->validate([
             'title'    => 'required|string|max:255',
             'details'  => 'nullable|string',
-            'link_url' => 'nullable|url|max:255', // <-- validasi link
+            'link_url' => 'nullable|url|max:255',
             'image'    => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
         ]);
 
         if ($request->hasFile('image')) {
-            // hapus file lama kalau ada
             if ($layanan->image && Storage::disk('public')->exists($layanan->image)) {
                 Storage::disk('public')->delete($layanan->image);
             }
@@ -80,10 +108,16 @@ class LayananController extends Controller
             $layanan->image = Storage::url($layanan->image);
         }
 
-        return response()->json($layanan);
+        return response()->json([
+            'success' => true,
+            'message' => 'Layanan berhasil diperbarui',
+            'data' => $layanan
+        ]);
     }
 
-    // Hapus layanan
+    // ===============================
+    // DELETE LAYANAN (Admin Only)
+    // ===============================
     public function destroy($id)
     {
         $layanan = Layanan::findOrFail($id);
@@ -94,6 +128,9 @@ class LayananController extends Controller
 
         $layanan->delete();
 
-        return response()->json(['message' => 'Layanan deleted']);
+        return response()->json([
+            'success' => true,
+            'message' => 'Layanan berhasil dihapus'
+        ]);
     }
 }
