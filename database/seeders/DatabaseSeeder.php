@@ -15,7 +15,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RolesSeeder::class,        // duluan, karena user butuh role
             UsersSeeder::class,        // setelah roles, isi user admin
-
+            LayananSeeder::class,
             // Konten informasi
             AplikasiSeeder::class,
             ArtikelSeeder::class,
