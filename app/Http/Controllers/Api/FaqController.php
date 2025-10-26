@@ -16,7 +16,7 @@ class FaqController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Faq::with(['pertanyaan', 'publisher'])
+        $query = Faq::with(['pertanyaanRelation', 'publisher'])
                     ->active()
                     ->ordered();
 
@@ -47,7 +47,7 @@ class FaqController extends Controller
      */
     public function show($id)
     {
-        $faq = Faq::with(['pertanyaan', 'publisher'])->find($id);
+        $faq = Faq::with(['pertanyaanRelation', 'publisher'])->find($id);
 
         if (!$faq || !$faq->is_active) {
             return response()->json([
@@ -70,7 +70,7 @@ class FaqController extends Controller
      */
     public function adminIndex(Request $request)
     {
-        $query = Faq::with(['pertanyaan', 'publisher']);
+        $query = Faq::with(['pertanyaanRelation', 'publisher']);
 
         // Filter berdasarkan status aktif
         if ($request->has('is_active')) {
@@ -114,20 +114,20 @@ class FaqController extends Controller
         }
 
         // Perbaikan: Cek user terlebih dahulu
-     $user = Auth::user();
-    
-    if (!$user) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Unauthorized - Silakan login terlebih dahulu'
-        ], 401);
-    }
+        $user = Auth::user();
 
-    $data = $validator->validated();
-    $data['published_by'] = $user->id_user;
-    $data['published_at'] = now();
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized - Silakan login terlebih dahulu'
+            ], 401);
+        }
 
-    $faq = Faq::create($data);
+        $data = $validator->validated();
+        $data['published_by'] = $user->id_user;
+        $data['published_at'] = now();
+
+        $faq = Faq::create($data);
 
         // Update status pertanyaan jika ada
         if ($request->question_id) {
@@ -139,7 +139,7 @@ class FaqController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'FAQ berhasil dipublikasikan',
-            'data' => $faq->load(['pertanyaan', 'publisher'])
+            'data' => $faq->load(['pertanyaanRelation', 'publisher'])
         ], 201);
     }
 
@@ -178,7 +178,7 @@ class FaqController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'FAQ berhasil diperbarui',
-            'data' => $faq->load(['pertanyaan', 'publisher'])
+            'data' => $faq->load(['pertanyaanRelation', 'publisher'])
         ]);
     }
 

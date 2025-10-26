@@ -32,8 +32,8 @@ class Faq extends Model
         'updated_at' => 'datetime'
     ];
 
-    // Relasi ke Pertanyaan
-    public function pertanyaan()
+    // Relasi ke Pertanyaan - RENAME untuk menghindari konflik dengan kolom 'pertanyaan'
+    public function pertanyaanRelation()
     {
         return $this->belongsTo(Pertanyaan::class, 'question_id');
     }
