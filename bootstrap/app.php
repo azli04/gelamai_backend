@@ -23,7 +23,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'auth'       => \App\Http\Middleware\Authenticate::class,
             'role'       => \App\Http\Middleware\RoleMiddleware::class,
             'superadmin' => \App\Http\Middleware\SuperadminMiddleware::class,
+
+            'track.visitor' => \App\Http\Middleware\TrackVisitor::class,
         ]);
+
+        $middleware->append(\App\Http\Middleware\TrackVisitor::class);
+
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
