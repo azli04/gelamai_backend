@@ -21,7 +21,7 @@ class PengaduanReplied extends Mailable
     public function build()
     {
         return $this->subject('Tanggapan atas Pengaduan Anda - BBPOM Padang')
-            ->view('emails.pengaduan_replied')
+            ->view('emails.pengaduanReplied')
             ->with(['pengaduan' => $this->pengaduan]);
     }
 }

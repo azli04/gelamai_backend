@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\TanggapanPengaduanMail;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class PengaduanController extends Controller
 {
@@ -16,7 +17,7 @@ class PengaduanController extends Controller
      */
     public function index()
     {
-        $pengaduan = Pengaduan::with('admin:id_user,name')
+        $pengaduan = Pengaduan::with('admin:id_user,nama')
             ->orderByDesc('created_at')
             ->get();
 
@@ -28,7 +29,7 @@ class PengaduanController extends Controller
     }
 
     /**
-     * 🔹 Simpan pengaduan baru (publik / frontend)
+     * 🔹 Simpan pengaduan baru (Publik / Frontend)
      */
     public function store(Request $request)
     {
@@ -51,10 +52,10 @@ class PengaduanController extends Controller
             'alamat_pabrik' => 'nullable|string',
             'batch' => 'nullable|string|max:255',
             'pertanyaan' => 'nullable|string',
-            'attachments.*' => 'nullable|file|max:5120', // max 5MB per file
+            'attachments.*' => 'nullable|file|max:5120', // 5MB max per file
         ]);
 
-        // 🔹 Simpan file lampiran
+        // Simpan file lampiran jika ada
         $attachments = [];
         if ($request->hasFile('attachments')) {
             foreach ($request->file('attachments') as $file) {
@@ -73,13 +74,13 @@ class PengaduanController extends Controller
     }
 
     /**
-     * 🔹 Lihat detail pengaduan
+     * 🔹 Lihat detail pengaduan (Admin)
      */
     public function show($id)
     {
-        $pengaduan = Pengaduan::with('admin:id_user,name')->findOrFail($id);
+        $pengaduan = Pengaduan::with('admin:id_user,nama')->findOrFail($id);
 
-        // Tampilkan URL lampiran penuh
+        // Ubah path file ke URL penuh
         if ($pengaduan->attachments) {
             $pengaduan->attachments = array_map(fn($a) => Storage::url($a), $pengaduan->attachments);
         }
@@ -91,50 +92,47 @@ class PengaduanController extends Controller
         ]);
     }
 
-    /**
-     * 🔹 Update status & tanggapan (admin)
-     */
     public function updateStatus(Request $request, $id)
-    {
-        $pengaduan = Pengaduan::findOrFail($id);
+{
+    $pengaduan = Pengaduan::findOrFail($id);
 
-        $request->validate([
-            'status' => 'required|in:baru,diproses,selesai',
-            'tanggapan' => 'nullable|string',
-        ]);
+    $request->validate([
+        'status' => 'required|in:baru,diproses,selesai',
+        'tanggapan' => 'nullable|string',
+    ]);
 
-        $pengaduan->update([
-            'status' => $request->status,
-            'tanggapan' => $request->tanggapan,
-            'ditanggapi_oleh' => auth()->id() ?? null,
-            'tanggal_tanggapan' => now(),
-        ]);
+    $pengaduan->update([
+        'status' => $request->status,
+        'tanggapan' => $request->tanggapan,
+        'ditanggapi_oleh' => auth()->user()->id_user ?? null,
+        'tanggal_tanggapan' => now(),
+    ]);
 
-        // 🔹 Kirim email ke pelapor jika ada tanggapan
-        if ($pengaduan->email && $request->filled('tanggapan')) {
-            try {
-                Mail::to($pengaduan->email)->send(new TanggapanPengaduanMail($pengaduan));
-            } catch (\Exception $e) {
-                // Log error tapi tetap return success
-                \Log::error('Gagal kirim email: ' . $e->getMessage());
-            }
+    // ✅ Kirim email tanggapan ke pelapor
+    if ($pengaduan->email && $request->filled('tanggapan')) {
+        try {
+            Mail::to($pengaduan->email)->send(new \App\Mail\PengaduanReplied($pengaduan));
+        } catch (\Exception $e) {
+            Log::error('Gagal kirim email pengaduan ID '.$id.': '.$e->getMessage());
         }
+    }
+
 
         return response()->json([
             'success' => true,
-            'message' => 'Status pengaduan diperbarui',
-            'data' => $pengaduan->load('admin:id_user,name'),
+            'message' => 'Status pengaduan berhasil diperbarui',
+            'data' => $pengaduan->load('admin:id_user,nama'),
         ]);
     }
 
     /**
-     * 🔹 Hapus pengaduan (admin)
+     * 🔹 Hapus pengaduan (Admin)
      */
     public function destroy($id)
     {
         $pengaduan = Pengaduan::findOrFail($id);
 
-        // Hapus file lampiran
+        // Hapus file lampiran dari storage
         if ($pengaduan->attachments) {
             foreach ($pengaduan->attachments as $file) {
                 if (Storage::disk('public')->exists($file)) {
