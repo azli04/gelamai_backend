@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\ContactInfoController;
 use App\Http\Controllers\Api\PertanyaanController;
 use App\Http\Controllers\Api\FaqController;
 use App\Http\Controllers\Api\VisitorController;
+use App\Http\Controllers\Api\WhistleblowingController;
 
 // ===============================
 // AUTH
@@ -158,4 +159,14 @@ Route::middleware(['auth:sanctum', 'role:Super Admin,Admin Pengaduan'])->group(f
 });
 
 
+
+
+Route::post('/whistleblowing', [WhistleblowingController::class, 'store']); // publik
+Route::get('/whistleblowing', [WhistleblowingController::class, 'index']);
+Route::get('/whistleblowing/{id}', [WhistleblowingController::class, 'show']);
+Route::put('/whistleblowing/{id}', [WhistleblowingController::class, 'update']);
+Route::delete('/whistleblowing/{id}', [WhistleblowingController::class, 'destroy']);
+
+
 Route::get('/visitors/stats', [VisitorController::class, 'stats']);
+

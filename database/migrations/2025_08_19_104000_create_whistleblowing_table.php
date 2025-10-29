@@ -8,22 +8,34 @@ return new class extends Migration {
     public function up(): void {
         Schema::create('whistleblowing', function (Blueprint $table) {
             $table->id('id_whistle');
-            $table->foreignId('id_user')->constrained('users','id_user')->onDelete('cascade');
-            $table->string('namaLengkap_user',75)->nullable();
-            $table->string('profesi',50)->nullable();
-            $table->string('alamat',100)->nullable();
+
+            // 🔹 Data pelapor
+            $table->string('nama_lengkap_user', 75)->nullable();
+            $table->string('profesi', 50)->nullable();
+            $table->string('alamat', 100)->nullable();
             $table->date('tgl_lahir')->nullable();
-            $table->string('email',50)->nullable();
-            $table->string('kontak',15)->nullable();
+            $table->string('email', 50)->nullable();
+            $table->string('kontak', 15)->nullable();
+
+            // 🔹 Data laporan
             $table->text('indikasi_pelanggaran')->nullable();
             $table->text('lokasi_pelanggaran')->nullable();
-            $table->string('oknum_pelanggaran',100)->nullable();
+            $table->text('oknum_pelanggaran')->nullable();
             $table->text('kronologi')->nullable();
-            $table->string('data_pendukung',255)->nullable();
-            $table->enum('status',['baru','proses','selesai'])->default('baru');
+
+            // 🔹 File bukti pendukung
+            $table->string('data_pendukung', 255)->nullable();
+
+            // 🔹 Status laporan
+            $table->enum('status', ['baru', 'proses', 'selesai'])->default('baru');
+
+            // 🔹 Admin yang memproses laporan (jika ada)
+            $table->unsignedBigInteger('id_admin')->nullable();
+
             $table->timestamps();
         });
     }
+
     public function down(): void {
         Schema::dropIfExists('whistleblowing');
     }

@@ -42,7 +42,12 @@ class UsersSeeder extends Seeder
                 'password' => 'password123',
                 'role' => 'Admin Web',
             ],
-            
+            [
+                'nama' => 'Kepala BPOM',
+                'email' => 'kepala@example.com',
+                'password' => 'password123',
+                'role' => 'Kepala BPOM',
+            ],
         ];
 
         foreach ($users as $u) {
