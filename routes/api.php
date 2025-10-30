@@ -165,7 +165,7 @@ Route::middleware(['auth:sanctum', 'role:Super Admin,Admin Pengaduan'])->group(f
 // ===============================
 Route::post('/whistleblowing', [WhistleblowingController::class, 'store']); // publik
 
-Route::middleware(['auth:sanctum', 'role:Super Admin,Admin Whistleblowing, Kepala BPOM '])->group(function () {
+Route::middleware(['auth:sanctum', 'role:Super Admin,Admin Whistle blowing, Kepala BPOM'])->group(function () {
 
 Route::get('/whistleblowing', [WhistleblowingController::class, 'index']);
 Route::get('/whistleblowing/{id}', [WhistleblowingController::class, 'show']);
