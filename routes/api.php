@@ -160,13 +160,17 @@ Route::middleware(['auth:sanctum', 'role:Super Admin,Admin Pengaduan'])->group(f
 
 
 
-
+// ===============================
+// WWhistleblowing
+// ===============================
 Route::post('/whistleblowing', [WhistleblowingController::class, 'store']); // publik
+
+Route::middleware(['auth:sanctum', 'role:Super Admin,Admin Whistleblowing, Kepala BPOM '])->group(function () {
+
 Route::get('/whistleblowing', [WhistleblowingController::class, 'index']);
 Route::get('/whistleblowing/{id}', [WhistleblowingController::class, 'show']);
 Route::put('/whistleblowing/{id}', [WhistleblowingController::class, 'update']);
 Route::delete('/whistleblowing/{id}', [WhistleblowingController::class, 'destroy']);
-
-
+});
 Route::get('/visitors/stats', [VisitorController::class, 'stats']);
 
