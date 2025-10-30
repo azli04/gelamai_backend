@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\PertanyaanController;
 use App\Http\Controllers\Api\FaqController;
 use App\Http\Controllers\Api\VisitorController;
 use App\Http\Controllers\Api\WhistleblowingController;
+use App\Http\Controllers\Api\PengaduanController;
 
 // ===============================
 // AUTH
@@ -152,25 +153,38 @@ Route::get('faq-topics', [FaqController::class, 'getTopics']);
 // Admin only - Manage FAQ
 Route::middleware(['auth:sanctum', 'role:Super Admin,Admin Pengaduan'])->group(function () {
     Route::get('admin/faqs', [FaqController::class, 'adminIndex']); // Ubah faq -> faqs
-    Route::post('admin/faqs', [FaqController::class, 'store']); // Tambah prefix admin
-    Route::put('admin/faqs/{id}', [FaqController::class, 'update']); // Tambah prefix admin dan ubah faq -> faqs
-    Route::delete('admin/faqs/{id}', [FaqController::class, 'destroy']); // Tambah prefix admin dan ubah faq -> faqs
-    Route::patch('admin/faqs/{id}/toggle-active', [FaqController::class, 'toggleActive']); // Tambah prefix admin dan ubah faq -> faqs
+    Route::post('admin/faqs', [FaqController::class, 'store']); 
+    Route::put('admin/faqs/{id}', [FaqController::class, 'update']); 
+    Route::delete('admin/faqs/{id}', [FaqController::class, 'destroy']); 
+    Route::patch('admin/faqs/{id}/toggle-active', [FaqController::class, 'toggleActive']); 
 });
 
 
+// ===============================
+// PENGADUAN (Public Complaint)
+// ===============================
+
+// Public
+Route::post('pengaduan', [PengaduanController::class, 'store']);
+// Admin 
+Route::middleware(['auth:sanctum', 'role:Super Admin,Admin Pengaduan'])->group(function () {
+    Route::get('admin/pengaduan', [PengaduanController::class, 'index']);
+    Route::get('admin/pengaduan/{id}', [PengaduanController::class, 'show']);
+    Route::patch('admin/pengaduan/{id}/status', [PengaduanController::class, 'updateStatus']);
+    Route::delete('admin/pengaduan/{id}', [PengaduanController::class, 'destroy']);
+});
 
 // ===============================
-// WWhistleblowing
+// Whistleblowing
 // ===============================
-Route::post('/whistleblowing', [WhistleblowingController::class, 'store']); // publik
-
-Route::middleware(['auth:sanctum', 'role:Super Admin,Admin Whistle blowing, Kepala BPOM'])->group(function () {
-
+Route::post('/whistleblowing', [WhistleblowingController::class, 'store']); // publik submit
+Route::middleware(['auth:sanctum', 'role:Super Admin,Admin Whistle Blowing, Kepala BPOM'])->group(function () {
 Route::get('/whistleblowing', [WhistleblowingController::class, 'index']);
 Route::get('/whistleblowing/{id}', [WhistleblowingController::class, 'show']);
 Route::put('/whistleblowing/{id}', [WhistleblowingController::class, 'update']);
 Route::delete('/whistleblowing/{id}', [WhistleblowingController::class, 'destroy']);
 });
+
+
 Route::get('/visitors/stats', [VisitorController::class, 'stats']);
 
